@@ -1,0 +1,131 @@
+{
+	"info": {
+		"_postman_id": "ba0b974d-9f3b-4bf5-a5f9-e020ea3b8621",
+		"name": "Simprosys Interview",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19572815"
+	},
+	"item": [
+		{
+			"name": "Create Product",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5MjI5NDM2LCJpYXQiOjE3NTkyMjU4MzYsImp0aSI6IjgyNWUzNjgyYzM5OTRkMDZiNGYxZDIwYWI3MTk4MmYxIiwidXNlcl9pZCI6IjEifQ.9SCJ8BeQ1-iyDQK-kuZlSC_1SnaSJFkaqZO7KbP1gr8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category\":\"Toy\",\n    \"title\": \"Postman\",\n    \"description\": \"ABC ABC ABC\",\n    \"price\": 100.0,\n    \"status\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/product/create/p/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"product",
+						"create",
+						"p",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Category",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5MjI5NDM2LCJpYXQiOjE3NTkyMjU4MzYsImp0aSI6IjgyNWUzNjgyYzM5OTRkMDZiNGYxZDIwYWI3MTk4MmYxIiwidXNlcl9pZCI6IjEifQ.9SCJ8BeQ1-iyDQK-kuZlSC_1SnaSJFkaqZO7KbP1gr8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"Toy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/product/create/c/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"product",
+						"create",
+						"c",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API Token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"admin\",\n    \"password\":\"admin@123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/token/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"token",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
