@@ -28,9 +28,7 @@ class Product(models.Model):
         return {
             "category": self.category_id.name,
             "title": self.title,
-            "price": self.price,
+            "price": float(self.price),
             "status": self.status,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
         }
 

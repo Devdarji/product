@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from product import renderers as product_render
 from product import serializers as product_serializer
 from product import models as product_models
 from product import tasks as product_tasks
@@ -60,6 +61,7 @@ class CreateProductView(APIView):
 class UpdateProductView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+    renderer_classes = [product_render.CustomAesRenderer]
 
     @staticmethod
     def put(request, id):
