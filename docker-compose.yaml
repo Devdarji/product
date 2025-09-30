@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  django:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      # Configure Celery broker URL in Django settings
+      CELERY_BROKER_URL: "redis://redis:6379/0" 
+
+  celery_worker:
+    build: .
+    command: celery -A simprosys worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - django 
+    environment:
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
