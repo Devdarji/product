@@ -12,15 +12,16 @@ from product import models as product_models
 from product import tasks as product_tasks
 
 from django.http import HttpResponse
-# Create your views here.
 
 
 class CreateProductView(APIView):
+    """Handle product creation and listing"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     @staticmethod
     def post(request):
+        """Create a new product"""
         serializer_instance = product_serializer.CreateProductSerializer(
             data=request.data
         )
@@ -30,6 +31,7 @@ class CreateProductView(APIView):
                 f"Please Enter Valid Data {str(serializer_instance.errors)}", status=400
             )
 
+        # Validate category exists
         category_instance = product_models.Category.objects.filter(
             name=serializer_instance.validated_data.get("category")
         ).last()
@@ -37,6 +39,7 @@ class CreateProductView(APIView):
         if not category_instance:
             return Response("Category is not available", status=404)
 
+        # Replace category name with category instance
         serializer_instance.validated_data.pop("category")
         serializer_instance.validated_data.update({"category_id": category_instance})
 
@@ -48,7 +51,7 @@ class CreateProductView(APIView):
 
     @staticmethod
     def get(request):
-
+        """Get all products with category details"""
         product_instances = product_models.Product.objects.select_related(
             "category_id"
         ).all()
@@ -59,13 +62,14 @@ class CreateProductView(APIView):
 
 
 class UpdateProductView(APIView):
+    """Handle product updates, deletion, and individual product retrieval"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     renderer_classes = [product_render.CustomAesRenderer]
 
     @staticmethod
     def put(request, id):
-
+        """Update product details"""
         product_instance = product_models.Product.objects.filter(id=id).last()
 
         if not product_instance:
@@ -80,6 +84,7 @@ class UpdateProductView(APIView):
                 f"Please Enter Valid Data {str(serializer_instance.errors)}", status=400
             )
 
+        # Update category if provided
         if serializer_instance.validated_data.get("category"):
             category_instance = product_models.Category.objects.filter(
                 name=serializer_instance.validated_data.get("category")
@@ -90,6 +95,7 @@ class UpdateProductView(APIView):
 
             product_instance.category_id = category_instance
 
+        # Update other fields if provided
         if serializer_instance.validated_data.get("title"):
             product_instance.title = serializer_instance.validated_data.get("title")
 
@@ -120,20 +126,20 @@ class UpdateProductView(APIView):
 
     @staticmethod
     def delete(request, id):
-
+        """Soft delete product by setting status to False"""
         product_instance = product_models.Product.objects.filter(id=id).last()
 
         if not product_instance:
             return Response("Product is not available", status=404)
 
         product_instance.status = False
-
         product_instance.save(update_fields=["status"])
 
         return Response(data="Product Deleted successfully!!", status=200)
 
     @staticmethod
     def get(request, id):
+        """Get single product details"""
         product_instance = product_models.Product.objects.filter(id=id).last()
 
         if not product_instance:
@@ -143,11 +149,13 @@ class UpdateProductView(APIView):
 
 
 class CreateCategoryView(APIView):
+    """Handle category creation"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     @staticmethod
     def post(request):
+        """Create new category or return existing one"""
         serializer_instance = product_serializer.CreateCategorySerializer(
             data=request.data
         )
@@ -157,6 +165,7 @@ class CreateCategoryView(APIView):
                 f"Please Enter Valid Data {str(serializer_instance.errors)}", status=400
             )
         
+        # Check if category already exists
         category_instance = product_models.Category.objects.filter(
             name =serializer_instance.validated_data.get("name")
         ).last()
@@ -164,6 +173,7 @@ class CreateCategoryView(APIView):
         if category_instance:
             return Response(data=category_instance.get_details(), status=200)
 
+        # Create new category
         category_instance = product_models.Category.objects.create(
             **serializer_instance.validated_data
         )
@@ -172,11 +182,13 @@ class CreateCategoryView(APIView):
 
 
 class BulkCreateView(APIView):
+    """Handle bulk product creation using Celery tasks"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     
     @staticmethod
     def post(request):
+        """Trigger async bulk product creation"""
         serializer_instance = product_serializer.BulkCreateSerializer(data=request.data)
 
         if not serializer_instance.is_valid():
@@ -184,6 +196,7 @@ class BulkCreateView(APIView):
                 f"Please Enter Valid Data {str(serializer_instance.errors)}", status=400
             )
         
+        # Queue bulk creation task
         product_tasks.bulk_create_product.delay(number=serializer_instance.validated_data.get("number"))
         
         return Response(
@@ -193,20 +206,29 @@ class BulkCreateView(APIView):
     
 
 class ExportProductDetailsView(APIView):
+    """Export product data to Excel file"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     
     @staticmethod
     def get(request):
+        """Generate and download Excel file with all product data"""
         product_instances = product_models.Product.objects.all()
+        
+        # Convert to DataFrame
         df = pd.DataFrame([product.get_details() for product in product_instances])
+        
+        # Remove timezone info for Excel compatibility
         df['created_at'] = df['created_at'].dt.tz_localize(None)
         df['updated_at'] = df['updated_at'].dt.tz_localize(None)
 
+        # Generate Excel file in memory
         with BytesIO() as b:
             writer = pd.ExcelWriter(b, engine='xlsxwriter')
             df.to_excel(writer, sheet_name='Sheet1', index=False)
             writer.close()
+            
+            # Prepare HTTP response with Excel file
             filename = 'Rapport'
             content_type = 'application/vnd.ms-excel'
             response = HttpResponse(b.getvalue(), content_type=content_type)

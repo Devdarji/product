@@ -26,8 +26,10 @@ class Product(models.Model):
 
     def get_details(self):
         return {
+            "id": self.id,
             "category": self.category_id.name,
             "title": self.title,
+            "description": self.description,
             "price": float(self.price),
             "status": self.status,
         }
